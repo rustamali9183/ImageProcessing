@@ -1,5 +1,6 @@
 import numpy as np
 import PIL
+import cv2
 import streamlit as st
 import functions as f
 # Function for Digital Negative
@@ -74,3 +75,207 @@ def log_transformation(image):
     """
     )
     return np.uint8(image)
+
+def applyMask(img,mask,denominator,i,j):
+    u,v,w=0,0,0
+    for x in range(-1,2):
+        for y in range(-1,2):
+            if(i+x>=0 and i+x<len(img) and j+y>=0 and j+y<len(img[0])):
+                r,g,b=img[i+x,j+y]
+                u+=int(r)*mask[x+1][y+1]
+                v+=int(g)*mask[x+1][y+1]
+                w+=int(b)*mask[x+1][y+1]
+    u=min(u,255)
+    v=min(v,255)
+    w=min(w,255)
+    u=max(u,0)
+    v=max(v,0)
+    w=max(w,0)
+    u=u//denominator
+    v=v//denominator
+    w=w//denominator
+    return u,v,w
+
+def box_Filter(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[1,1,1],[1,1,1],[1,1,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,9,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+
+def weighted_average(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[1,2,1],[2,4,2],[1,2,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,16,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+def laplacian_1(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[0,-1,0],[-1,4,-1],[0,-1,0]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+def laplacian_2(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-1,-1,-1],[-1,8,-1],[-1,-1,-1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+def horizontal_sobel(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-1,-2,-1],[0,0,0],[1,2,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+    
+def vertical_sobel(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-1,0,1],[-2,0,2],[-1,0,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+
+def horizontal_prewitt(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-1,-1,-1],[0,0,0],[1,1,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+def vertical_prewitt(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-1,0,1],[-1,0,1],[-1,0,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+
+def applyMed(img,i,j):
+    u,v,w=[],[],[]
+    for x in range(-1,2):
+        for y in range(-1,2):
+            if(i+x>=0 and i+x<len(img) and j+y>=0 and j+y<len(img[0])):
+                r,g,b=img[i+x,j+y]
+                u.append(r)
+                v.append(g)
+                w.append(b)
+            else:
+                u.append(0)
+                v.append(0)
+                w.append(0)
+                
+    return sorted(u)[4],sorted(v)[4],sorted(w)[4]    
+    
+def median_filter(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMed(image,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    return MaskedImage
+
+def applyMin(img,i,j):
+    u,v,w=255,255,255
+    for x in range(-1,2):
+        for y in range(-1,2):
+            if(i+x>=0 and i+x<len(img) and j+y>=0 and j+y<len(img[0])):
+                r,g,b=img[i+x,j+y]
+                u=min(u,r)
+                v=min(v,r)
+                w=min(w,r)
+    
+    return u,v,w
+
+def min_filter(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMin(image,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    return MaskedImage
+
+def applyMax(img,i,j):
+    u,v,w=0,0,0
+    for x in range(-1,2):
+        for y in range(-1,2):
+            if(i+x>=0 and i+x<len(img) and j+y>=0 and j+y<len(img[0])):
+                r,g,b=img[i+x,j+y]
+                u=max(u,r)
+                v=max(v,r)
+                w=max(w,r)
+    
+    return u,v,w
+
+def max_filter(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMax(image,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    return MaskedImage
+
+def embossing_filter(image):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[-2,-1,0],[-1,1,1],[0,1,2]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,1,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    
+    return MaskedImage
+
+def motion_blur(image,n):
+    MaskedImage=image.copy()
+    height,width,x=image.shape
+    mask=[[1,0,0],[0,1,0],[0,0,1]]
+    for i in range(height):
+        for j in range(width):
+            r,g,b=applyMask(image,mask,n,i,j)
+            MaskedImage[i,j]=[r,g,b]
+    return MaskedImage
+
+def histogram_equalization(image):
+    equalized_image = cv2.equalizeHist(image)
+    return equalized_image

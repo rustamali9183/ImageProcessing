@@ -32,7 +32,8 @@ def main():
         f.display_image(image)
 
     # Function selector
-    functions = [None, "thresholding", "digital_negative", 'log_transformation', 'clipping', 'identity_filter', 'histogram']
+    functions = [None, "thresholding", "digital_negative", 'log_transformation', 'clipping', 'identity_filter', 'histogram','box_filter','weighted_average','laplacian_1','laplacian_2','horizontal_sobel','vertical_sobel','horizontal_prewitt','vertical_prewitt','median_filter','min_filter','max_filter','embossing_filter','motion_blur','histogram_equalization']
+
     selected_function = st.sidebar.selectbox("Functions", functions)
 
 
@@ -62,6 +63,52 @@ def main():
         diagonal_value = st.sidebar.slider('Specify the diagonal value of the filter', 1, 255, 255)
         manipulated_image = ft.identity_filter(image, size, diagonal_value)
         description = ft.identity_filter.__doc__
+
+    elif selected_function == 'box_filter':
+        manipulated_image = po.box_Filter(image)
+
+    elif selected_function == 'weighted_average':
+        manipulated_image = po.weighted_average(image)
+
+    elif selected_function == 'laplacian_1':
+        manipulated_image = po.laplacian_1(image)
+
+    elif selected_function == 'laplacian_2':
+        manipulated_image = po.laplacian_2(image)
+
+    elif selected_function == 'horizontal_sobel':
+        manipulated_image = po.horizontal_sobel(image)
+
+    elif selected_function == 'vertical_sobel':
+        manipulated_image = po.vertical_sobel(image)
+
+    elif selected_function == 'horizontal_prewitt':
+        manipulated_image = po.horizontal_prewitt(image)
+
+    elif selected_function == 'vertical_prewitt':
+        manipulated_image = po.vertical_prewitt(image)
+
+    elif selected_function == 'median_filter':
+        manipulated_image = po.median_filter(image)
+
+    elif selected_function == 'min_filter':
+        manipulated_image = po.min_filter(image)
+
+    elif selected_function == 'max_filter':
+        manipulated_image = po.max_filter(image)
+
+    elif selected_function == 'embossing_filter':
+        manipulated_image = po.embossing_filter(image)
+
+    elif selected_function == 'motion_blur':
+        n = st.sidebar.slider('constant', 0, 255, 1)
+        manipulated_image = po.motion_blur(image,n)
+
+    elif selected_function == 'histogram_equalization':
+        manipulated_image = po.histogram_equalization(image)
+
+    
+    
 
     # Display manipulated image
     with col2:
