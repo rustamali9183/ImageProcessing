@@ -24,7 +24,7 @@ def main():
         image = Image.open("default_image.png")
     else:
         image = Image.open(uploaded_file)
-
+    image=np.array(image)
     col1, col2 = st.columns(2)
     # Display original image
     with col1:
